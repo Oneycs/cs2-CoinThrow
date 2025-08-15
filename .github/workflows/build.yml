@@ -1,0 +1,92 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'  # Run on any tag starting with 'v'
+    paths-ignore:
+    - LICENSE
+    - README.md
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: 'Mark as pre-release'
+        type: boolean
+        required: false
+        default: false
+
+# Use top-level permissions
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Extract version from code
+        id: extract_version
+        run: |
+          VERSION=$(grep -o 'ModuleVersion => "[^"]*' cs2-CoinThrow.cs | sed 's/ModuleVersion => "//')
+          echo "Plugin version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "RELEASE_TAG=v$VERSION" >> $GITHUB_ENV
+      
+      - name: Display structure
+        run: ls -la
+      
+      - name: Restore dependencies
+        run: dotnet restore
+        continue-on-error: false
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        continue-on-error: false
+      
+      - name: Display build artifacts
+        run: ls -la bin/Release/net8.0/
+      
+      - name: Create Release ZIP
+        run: |
+          mkdir -p publish/addons/counterstrikesharp/plugins/cs2-CoinThrow
+          cp -r bin/Release/net8.0/* publish/addons/counterstrikesharp/plugins/cs2-CoinThrow/
+          cd publish && zip -r ../cs2-CoinThrow-${{ env.RELEASE_TAG }}.zip .
+          cd .. && ls -la *.zip
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          release_name: Release ${{ env.RELEASE_TAG }}
+          draft: false
+          prerelease: false
+      
+      - name: Upload Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: cs2-CoinThrow-${{ env.RELEASE_TAG }}.zip
+          asset_name: cs2-CoinThrow-${{ env.RELEASE_TAG }}.zip
+          tag: ${{ env.RELEASE_TAG }}
+          overwrite: true
+          body: |
+            # cs2-CoinThrow Release ${{ env.RELEASE_TAG }}
+            
+            Anticheat plugin for Counter-Strike 2 community servers
