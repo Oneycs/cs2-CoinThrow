@@ -100,11 +100,9 @@ namespace CoinThrow
         
                 string html =
                     $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" +
-                    $"<font size='18' color='#AAAAAA'>{prev}</font> " +
-                    $"<font size='20' color='#FFCC00'>◄</font> " +
-                    $"<font size='25' color='#FF0000'><b>{curr}</b></font> " +
-                    $"<font size='20' color='#FFCC00'>►</font> " +
-                    $"<font size='18' color='#AAAAAA'>{next}</font><br><br>" +
+                    $"<font size='16' color='#AAAAAA'>{prev}</font><br>" + // prev (gray, small)
+                    $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>" + // current (big, red)
+                    $"<font size='16' color='#AAAAAA'>{next}</font><br><br>" + // next (gray, small)
                     $"<font size='15' color='#AAAAAA'>CS2.NET</font>";
         
                 player.PrintToCenterHtml(html);
@@ -130,11 +128,9 @@ namespace CoinThrow
         
                         string finalHtml =
                             $"<br><font size='20' color='#FFFFFF'>Result:</font><br><br>" +
-                            $"<font size='18' color='#AAAAAA'>{prev}</font> " +
-                            $"<font size='20' color='#FFCC00'>◄</font> " +
-                            $"<font size='25' color='#FF0000'><b>{curr}</b></font> " +
-                            $"<font size='20' color='#FFCC00'>►</font> " +
-                            $"<font size='18' color='#AAAAAA'>{next}</font><br><br>" +
+                            $"<font size='16' color='#AAAAAA'>{prev}</font><br>" +
+                            $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>" +
+                            $"<font size='16' color='#AAAAAA'>{next}</font><br><br>" +
                             $"<font size='15' color='#AAAAAA'>CS2.NET</font>";
         
                         player.PrintToCenterHtml(finalHtml);
