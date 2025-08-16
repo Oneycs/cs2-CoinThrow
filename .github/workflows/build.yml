@@ -62,7 +62,7 @@ jobs:
       
       - name: Create Release ZIP
         run: |
-          mkdir -p publish/addons/counterstrikesharp/plugins/cCoinThrow
+          mkdir -p publish/addons/counterstrikesharp/plugins/CoinThrow
           cp -r bin/Release/net8.0/* publish/addons/counterstrikesharp/plugins/CoinThrow/
           cd publish && zip -r ../CoinThrow-${{ env.RELEASE_TAG }}.zip .
           cd .. && ls -la *.zip
