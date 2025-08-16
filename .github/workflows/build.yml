@@ -41,7 +41,7 @@ jobs:
       - name: Extract version from code
         id: extract_version
         run: |
-          VERSION=$(grep -o 'ModuleVersion => "[^"]*' cs2-CoinThrow.cs | sed 's/ModuleVersion => "//')
+          VERSION=$(grep -o 'ModuleVersion => "[^"]*' CoinThrow.cs | sed 's/ModuleVersion => "//')
           echo "Plugin version: $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE_TAG=v$VERSION" >> $GITHUB_ENV
@@ -62,9 +62,9 @@ jobs:
       
       - name: Create Release ZIP
         run: |
-          mkdir -p publish/addons/counterstrikesharp/plugins/cs2-CoinThrow
-          cp -r bin/Release/net8.0/* publish/addons/counterstrikesharp/plugins/cs2-CoinThrow/
-          cd publish && zip -r ../cs2-CoinThrow-${{ env.RELEASE_TAG }}.zip .
+          mkdir -p publish/addons/counterstrikesharp/plugins/cCoinThrow
+          cp -r bin/Release/net8.0/* publish/addons/counterstrikesharp/plugins/CoinThrow/
+          cd publish && zip -r ../CoinThrow-${{ env.RELEASE_TAG }}.zip .
           cd .. && ls -la *.zip
 
       - name: Create Release
@@ -87,6 +87,6 @@ jobs:
           tag: ${{ env.RELEASE_TAG }}
           overwrite: true
           body: |
-            # cs2-CoinThrow Release ${{ env.RELEASE_TAG }}
+            # CoinThrow Release ${{ env.RELEASE_TAG }}
             
             Anticheat plugin for Counter-Strike 2 community servers
