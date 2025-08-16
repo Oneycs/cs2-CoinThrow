@@ -18,7 +18,7 @@ namespace CoinThrow
 
         public override string ModuleAuthor => "TICHOJEBEC";
         public override string ModuleName => "CoinThrow";
-        public override string ModuleVersion => "1.2";
+        public override string ModuleVersion => "v1.2";
 
         public Config Config { get; set; } = new();
         public void OnConfigParsed(Config config) => Config = config;
@@ -50,7 +50,7 @@ namespace CoinThrow
         private void UpdateLastCoinThrowTime(string steamId) =>
             _lastCoinThrowTimes[steamId] = DateTime.Now;
 
-        [ConsoleCommand("css_cointhrow", "Throw a coin with text-based roulette")]
+        [ConsoleCommand("css_cointhrow", "Throw a coin with a rolling menu effect")]
         public void OnCoinThrowCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (player == null || player.PlayerPawn.Value == null || !player.IsValid)
@@ -64,80 +64,100 @@ namespace CoinThrow
                 return;
             }
 
-            bool isHeads = Random.Next(2) == 0;
+            // Randomize final result
+            string[] options = { "Heads", "Tails" };
+            int finalIndex = Random.Next(options.Length);
+            string finalResult = options[finalIndex];
 
-            ShowTextRoulette(player, isHeads, () =>
+            int totalRolls = 12; // how many steps in the animation
+            int currentRoll = 0;
+
+            // Timer rolls through Heads/Tails quickly
+            AddTimer(0.15f, () =>
             {
-                string resultString = isHeads ? "Heads" : "Tails";
+                if (!player.IsValid)
+                    return;
 
-                Server.PrintToChatAll(
-                    $"Player {ChatColors.Green}{player.PlayerName}{ChatColors.Default} threw the coin and the result is {ChatColors.Green}{resultString}{ChatColors.Default}."
-                );
+                int index = currentRoll % options.Length;
+                string display = BuildRollingHtml(options, index, false);
+                player.PrintToCenterHtml(display);
+
+                currentRoll++;
+
+                // Continue rolling until we hit totalRolls
+                if (currentRoll < totalRolls)
+                {
+                    AddTimer(0.15f, () => OnRollStep(player, options, finalIndex, finalResult, steamId, ref currentRoll, totalRolls));
+                }
+                else
+                {
+                    // Show final result
+                    string finalDisplay = BuildRollingHtml(options, finalIndex, true);
+                    player.PrintToCenterHtml(finalDisplay);
+
+                    int totalThrows = _database?.IncrementPlayerThrows(steamId, player.PlayerName) ?? 0;
+
+                    Server.PrintToChatAll(
+                        $"Player {ChatColors.Green}{player.PlayerName}{ChatColors.Default} threw the coin and the result is {ChatColors.Green}{finalResult}{ChatColors.Default}."
+                    );
+
+                    Server.PrintToChatAll(
+                        $"His total number of throws is {ChatColors.Green}{totalThrows}x{ChatColors.Default}."
+                    );
+
+                    UpdateLastCoinThrowTime(steamId);
+                }
+            });
+        }
+
+        private void OnRollStep(CCSPlayerController player, string[] options, int finalIndex, string finalResult, string steamId, ref int currentRoll, int totalRolls)
+        {
+            if (!player.IsValid)
+                return;
+
+            int index = currentRoll % options.Length;
+            string display = BuildRollingHtml(options, index, false);
+            player.PrintToCenterHtml(display);
+
+            currentRoll++;
+
+            if (currentRoll < totalRolls)
+            {
+                AddTimer(0.15f, () => OnRollStep(player, options, finalIndex, finalResult, steamId, ref currentRoll, totalRolls));
+            }
+            else
+            {
+                string finalDisplay = BuildRollingHtml(options, finalIndex, true);
+                player.PrintToCenterHtml(finalDisplay);
 
                 int totalThrows = _database?.IncrementPlayerThrows(steamId, player.PlayerName) ?? 0;
 
                 Server.PrintToChatAll(
+                    $"Player {ChatColors.Green}{player.PlayerName}{ChatColors.Default} threw the coin and the result is {ChatColors.Green}{finalResult}{ChatColors.Default}."
+                );
+
+                Server.PrintToChatAll(
                     $"His total number of throws is {ChatColors.Green}{totalThrows}x{ChatColors.Default}."
                 );
-            });
 
-            UpdateLastCoinThrowTime(steamId);
+                UpdateLastCoinThrowTime(steamId);
+            }
         }
 
-        private void ShowTextRoulette(CCSPlayerController player, bool isHeads, Action onComplete)
+        private string BuildRollingHtml(string[] options, int currentIndex, bool isFinal)
         {
-            string[] options = { "Heads", "Tails" };
-            int currentIndex = 0;
-            float delay = 0.1f;       // start fast
-            float slowdownStep = 0.05f;
-            int spins = 10;           // fast spins before slowing down
+            string top = "<div style='text-align:center;color:white;font-size:20px;'>Rolling your Coin...</div>";
+            string list = "";
 
-            void SpinStep()
+            for (int i = 0; i < options.Length; i++)
             {
-                string prev = options[(currentIndex - 1 + options.Length) % options.Length];
-                string curr = options[currentIndex];
-                string next = options[(currentIndex + 1) % options.Length];
-
-                string html =
-                    $"<font color='#FFFFFF' size='20'>{prev}</font><br>" +
-                    $"<font color='#FF0000' size='25'><b>{curr}</b></font><br>" +
-                    $"<font color='#FFFFFF' size='20'>{next}</font>";
-
-                player.PrintToCenterHtml(html);
-
-                currentIndex = (currentIndex + 1) % options.Length;
-
-                if (spins > 0)
-                {
-                    spins--;
-                    AddTimer(delay, SpinStep);
-                }
-                else
-                {
-                    delay += slowdownStep;
-
-                    // When slow enough, stop at the target
-                    if (delay > 0.5f)
-                    {
-                        currentIndex = isHeads ? 0 : 1;
-                        prev = options[(currentIndex - 1 + options.Length) % options.Length];
-                        curr = options[currentIndex];
-                        next = options[(currentIndex + 1) % options.Length];
-
-                        html =
-                            $"<font color='#FFFFFF' size='20'>{prev}</font><br>" +
-                            $"<font color='#FF0000' size='25'><b>{curr}</b></font><br>" +
-                            $"<font color='#FFFFFF' size='20'>{next}</font>";
-
-                        player.PrintToCenterHtml(html);
-                        onComplete();
-                        return;
-                    }
-                    AddTimer(delay, SpinStep);
-                }
+                string color = (i == currentIndex) ? "yellow" : "white";
+                string fontWeight = (i == currentIndex) ? "bold" : "normal";
+                list += $"<div style='text-align:center;color:{color};font-size:18px;font-weight:{fontWeight};'>{options[i]}</div>";
             }
 
-            SpinStep();
+            string footer = "<div style='text-align:center;color:orange;font-size:16px;'>CSKO.NET</div>";
+            return $"{top}{list}{footer}";
         }
     }
 }
