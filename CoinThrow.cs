@@ -95,12 +95,16 @@ namespace CoinThrow
             void SpinStep()
             {
                 string curr = options[currentIndex];
+                string prev = options[(currentIndex - 1 + options.Length) % options.Length];
+                string next = options[(currentIndex + 1) % options.Length];
         
                 string html =
                     $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" +
+                    $"<font size='18' color='#AAAAAA'>{prev}</font> " +
                     $"<font size='20' color='#FFCC00'>◄</font> " +
                     $"<font size='25' color='#FF0000'><b>{curr}</b></font> " +
-                    $"<font size='20' color='#FFCC00'>►</font><br><br>" +
+                    $"<font size='20' color='#FFCC00'>►</font> " +
+                    $"<font size='18' color='#AAAAAA'>{next}</font><br><br>" +
                     $"<font size='15' color='#AAAAAA'>CS2.NET</font>";
         
                 player.PrintToCenterHtml(html);
@@ -118,18 +122,30 @@ namespace CoinThrow
         
                     if (delay > 0.5f)
                     {
+                        // Pick final result
                         currentIndex = isHeads ? 0 : 1;
                         curr = options[currentIndex];
+                        prev = options[(currentIndex - 1 + options.Length) % options.Length];
+                        next = options[(currentIndex + 1) % options.Length];
         
-                        html =
-                            $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" +
+                        string finalHtml =
+                            $"<br><font size='20' color='#FFFFFF'>Result:</font><br><br>" +
+                            $"<font size='18' color='#AAAAAA'>{prev}</font> " +
                             $"<font size='20' color='#FFCC00'>◄</font> " +
                             $"<font size='25' color='#FF0000'><b>{curr}</b></font> " +
-                            $"<font size='20' color='#FFCC00'>►</font><br><br>" +
+                            $"<font size='20' color='#FFCC00'>►</font> " +
+                            $"<font size='18' color='#AAAAAA'>{next}</font><br><br>" +
                             $"<font size='15' color='#AAAAAA'>CS2.NET</font>";
         
-                        player.PrintToCenterHtml(html);
-                        onComplete();
+                        player.PrintToCenterHtml(finalHtml);
+        
+                        // Keep result for 2 seconds
+                        AddTimer(2.0f, () =>
+                        {
+                            player.PrintToCenterHtml("");
+                            onComplete();
+                        });
+        
                         return;
                     }
                     AddTimer(delay, SpinStep);
