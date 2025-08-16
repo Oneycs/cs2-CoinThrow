@@ -82,8 +82,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: cs2-CoinThrow-${{ env.RELEASE_TAG }}.zip
-          asset_name: cs2-CoinThrow-${{ env.RELEASE_TAG }}.zip
+          file: CoinThrow-${{ env.RELEASE_TAG }}.zip
+          asset_name: CoinThrow-${{ env.RELEASE_TAG }}.zip
           tag: ${{ env.RELEASE_TAG }}
           overwrite: true
           body: |
