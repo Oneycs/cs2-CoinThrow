@@ -18,7 +18,7 @@ namespace CoinThrow
 
         public override string ModuleAuthor => "TICHOJEBEC";
         public override string ModuleName => "CoinThrow";
-        public override string ModuleVersion => "1.2";
+        public override string ModuleVersion => "v1.2";
 
         public Config Config { get; set; } = new();
         public void OnConfigParsed(Config config) => Config = config;
