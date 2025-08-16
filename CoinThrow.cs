@@ -51,64 +51,66 @@ namespace CoinThrow
             _lastCoinThrowTimes[steamId] = DateTime.Now;
 
         [ConsoleCommand("css_cointhrow", "Throw a coin with a rolling menu effect")]
-        public void OnCoinThrowCommand(CCSPlayerController? player, CommandInfo command)
+        private void OnCoinThrowCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (player == null || player.PlayerPawn.Value == null || !player.IsValid)
                 return;
-
+        
             string steamId = player.SteamID.ToString();
-
+        
             if (IsOnCooldown(steamId, out var remaining))
             {
                 player.PrintToChat($"You can throw the coin only once every {ChatColors.DarkRed}{CooldownSeconds}{ChatColors.Default} seconds! ({remaining:F0}s left)");
                 return;
             }
-
+        
             // Randomize final result
             string[] options = { "Heads", "Tails" };
             int finalIndex = Random.Next(options.Length);
             string finalResult = options[finalIndex];
-
-            int totalRolls = 12; // how many steps in the animation
+        
+            int totalRolls = 12; // number of animation steps
             int currentRoll = 0;
-
-            // Timer rolls through Heads/Tails quickly
-            AddTimer(0.15f, () =>
+        
+            // use closure so we can modify currentRoll safely
+            void RollStep()
             {
                 if (!player.IsValid)
                     return;
-
+        
                 int index = currentRoll % options.Length;
                 string display = BuildRollingHtml(options, index, false);
                 player.PrintToCenterHtml(display);
-
+        
                 currentRoll++;
-
-                // Continue rolling until we hit totalRolls
+        
                 if (currentRoll < totalRolls)
                 {
-                    AddTimer(0.15f, () => OnRollStep(player, options, finalIndex, finalResult, steamId, ref currentRoll, totalRolls));
+                    AddTimer(0.15f, RollStep);
                 }
                 else
                 {
-                    // Show final result
                     string finalDisplay = BuildRollingHtml(options, finalIndex, true);
                     player.PrintToCenterHtml(finalDisplay);
-
+        
                     int totalThrows = _database?.IncrementPlayerThrows(steamId, player.PlayerName) ?? 0;
-
+        
                     Server.PrintToChatAll(
                         $"Player {ChatColors.Green}{player.PlayerName}{ChatColors.Default} threw the coin and the result is {ChatColors.Green}{finalResult}{ChatColors.Default}."
                     );
-
+        
                     Server.PrintToChatAll(
                         $"His total number of throws is {ChatColors.Green}{totalThrows}x{ChatColors.Default}."
                     );
-
+        
                     UpdateLastCoinThrowTime(steamId);
                 }
-            });
+            }
+        
+            // start first step
+            AddTimer(0.15f, RollStep);
         }
+
 
         private void OnRollStep(CCSPlayerController player, string[] options, int finalIndex, string finalResult, string steamId, ref int currentRoll, int totalRolls)
         {
