@@ -69,10 +69,10 @@ namespace CoinThrow
             int finalIndex = Random.Next(options.Length);
             string finalResult = options[finalIndex];
         
-            int totalRolls = 12; // number of animation steps
+            // randomize number of rolls so it feels natural
+            int totalRolls = Random.Next(10, 18); // between 10–17
             int currentRoll = 0;
         
-            // use closure so we can modify currentRoll safely
             void RollStep()
             {
                 if (!player.IsValid)
@@ -107,10 +107,9 @@ namespace CoinThrow
                 }
             }
         
-            // start first step
+            // kick off rolling
             AddTimer(0.15f, RollStep);
         }
-
 
         private void OnRollStep(CCSPlayerController player, string[] options, int finalIndex, string finalResult, string steamId, ref int currentRoll, int totalRolls)
         {
