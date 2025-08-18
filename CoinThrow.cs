@@ -18,7 +18,7 @@ namespace CoinThrow
 
         public override string ModuleAuthor => "TICHOJEBEC";
         public override string ModuleName => "CoinThrow";
-        public override string ModuleVersion => "1.5";
+        public override string ModuleVersion => "1.2";
 
         public Config Config { get; set; } = new();
         public void OnConfigParsed(Config config) => Config = config;
@@ -87,16 +87,14 @@ namespace CoinThrow
         private void ShowTextRoulette(CCSPlayerController player, bool isHeads, Action onComplete)
         {
             string[] options = { "Heads", "Tails" };
-            int currentIndex = 0;
-            int flips = 6;   // how many times to flip before result
-            float delay = 0.3f;
+            int flips = 5;         // how many times to flip before result
+            float delay = 0.3f;    // time between flips
         
-            void SpinStep()
+            void SpinStep(int remainingFlips)
             {
-                if (flips > 0)
+                if (remainingFlips > 0)
                 {
-                    // Show rolling animation
-                    string curr = options[currentIndex];
+                    string curr = options[remainingFlips % options.Length];
                     string html =
                         $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" +
                         $"<font size='28' color='#FF0000'><b>&gt; {curr.ToUpper()} &lt;</b></font><br><br>" +
@@ -104,10 +102,7 @@ namespace CoinThrow
         
                     player.PrintToCenterHtml(html);
         
-                    currentIndex = (currentIndex + 1) % options.Length;
-                    flips--;
-        
-                    AddTimer(delay, SpinStep);
+                    AddTimer(delay, () => SpinStep(remainingFlips - 1));
                 }
                 else
                 {
@@ -118,20 +113,28 @@ namespace CoinThrow
                         $"<font size='28' color='#FF0000'><b>&gt; {result.ToUpper()} &lt;</b></font><br><br>" +
                         $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
         
-                    player.PrintToCenterHtml(finalHtml);
-        
-                    // ✅ Send chat message immediately
+                    // ✅ Send chat immediately
                     onComplete();
         
-                    // Clear after 2s
-                    AddTimer(2.0f, () =>
+                    // ✅ Keep final HUD for 2s by refreshing it every 0.2s
+                    int repeats = 10; // 10 × 0.2s = 2s
+                    void HoldResult(int count)
                     {
-                        player.PrintToCenterHtml("");
-                    });
+                        if (count <= 0)
+                        {
+                            player.PrintToCenterHtml(""); // clear after hold
+                            return;
+                        }
+        
+                        player.PrintToCenterHtml(finalHtml);
+                        AddTimer(0.2f, () => HoldResult(count - 1));
+                    }
+        
+                    HoldResult(repeats);
                 }
             }
         
-            SpinStep();
+            SpinStep(flips);
         }
     }
 }
