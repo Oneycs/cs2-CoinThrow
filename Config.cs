@@ -10,5 +10,6 @@ namespace CoinThrow
         [JsonPropertyName("DBPassword")] public string DbPassword { get; set; } = "password";
         [JsonPropertyName("DBHost")] public string DbHost { get; set; } = "localhost";
         [JsonPropertyName("DBPort")] public int DbPort { get; set; } = 3306;
+        [JsonPropertyName("ServerBrand")] public string ServerBrand { get; set; } = "CSKO.NET";
     }
 }
