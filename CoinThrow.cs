@@ -18,7 +18,7 @@ namespace CoinThrow
 
         public override string ModuleAuthor => "TICHOJEBEC";
         public override string ModuleName => "CoinThrow";
-        public override string ModuleVersion => "1.4";
+        public override string ModuleVersion => "1.5";
 
         public Config Config { get; set; } = new();
         public void OnConfigParsed(Config config) => Config = config;
@@ -88,55 +88,46 @@ namespace CoinThrow
         {
             string[] options = { "Heads", "Tails" };
             int currentIndex = 0;
-            float delay = 0.2f;        // safer starting delay
-            float slowdownStep = 0.1f; // how much slower each step gets
-            int spins = 8;             // fast spins before slowing
+            int flips = 6;   // how many times to flip before result
+            float delay = 0.3f;
         
             void SpinStep()
             {
-                string curr = options[currentIndex];
-        
-                string html =
-                    $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" +
-                    $"<font size='28' color='#FF0000'><b>&gt; {curr.ToUpper()} &lt;</b></font><br><br>" +
-                    $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
-        
-                player.PrintToCenterHtml(html);
-        
-                currentIndex = (currentIndex + 1) % options.Length;
-        
-                if (spins > 0)
+                if (flips > 0)
                 {
-                    spins--;
+                    // Show rolling animation
+                    string curr = options[currentIndex];
+                    string html =
+                        $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" +
+                        $"<font size='28' color='#FF0000'><b>&gt; {curr.ToUpper()} &lt;</b></font><br><br>" +
+                        $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
+        
+                    player.PrintToCenterHtml(html);
+        
+                    currentIndex = (currentIndex + 1) % options.Length;
+                    flips--;
+        
                     AddTimer(delay, SpinStep);
                 }
                 else
                 {
-                    delay += slowdownStep;
+                    // Final result
+                    string result = isHeads ? "Heads" : "Tails";
+                    string finalHtml =
+                        $"<br><font size='20' color='#FFFFFF'>Result:</font><br><br>" +
+                        $"<font size='28' color='#FF0000'><b>&gt; {result.ToUpper()} &lt;</b></font><br><br>" +
+                        $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
         
-                    if (delay > 0.6f) // stop when slowed down enough
+                    player.PrintToCenterHtml(finalHtml);
+        
+                    // ✅ Send chat message immediately
+                    onComplete();
+        
+                    // Clear after 2s
+                    AddTimer(2.0f, () =>
                     {
-                        // Final result
-                        curr = isHeads ? "Heads" : "Tails";
-        
-                        string finalHtml =
-                            $"<br><font size='20' color='#FFFFFF'>Result:</font><br><br>" +
-                            $"<font size='28' color='#FF0000'><b>&gt; {curr.ToUpper()} &lt;</b></font><br><br>" +
-                            $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
-        
-                        player.PrintToCenterHtml(finalHtml);
-        
-                        // Keep result for 2 seconds, then clear
-                        AddTimer(2.0f, () =>
-                        {
-                            player.PrintToCenterHtml("");
-                            onComplete();
-                        });
-        
-                        return;
-                    }
-        
-                    AddTimer(delay, SpinStep);
+                        player.PrintToCenterHtml("");
+                    });
                 }
             }
         
