@@ -99,8 +99,8 @@ namespace CoinThrow
                 string next = options[(currentIndex + 1) % options.Length];
         
                 string html =
-                    $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" 
-                    $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>" // current (big, red)
+                    $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>";
+                    $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>"; // current (big, red)
                     $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
         
                 player.PrintToCenterHtml(html);
