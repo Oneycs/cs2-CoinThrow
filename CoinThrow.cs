@@ -18,7 +18,7 @@ namespace CoinThrow
 
         public override string ModuleAuthor => "TICHOJEBEC";
         public override string ModuleName => "CoinThrow";
-        public override string ModuleVersion => "1.2";
+        public override string ModuleVersion => "1.3";
 
         public Config Config { get; set; } = new();
         public void OnConfigParsed(Config config) => Config = config;
@@ -100,8 +100,8 @@ namespace CoinThrow
         
                 string html =
                     $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" 
-                    $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>" + // current (big, red)
-                    $"<font size='15' color='#AAAAAA'>CSKO.NET</font>";
+                    $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>" // current (big, red)
+                    $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
         
                 player.PrintToCenterHtml(html);
         
