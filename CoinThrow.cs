@@ -18,7 +18,7 @@ namespace CoinThrow
 
         public override string ModuleAuthor => "TICHOJEBEC";
         public override string ModuleName => "CoinThrow";
-        public override string ModuleVersion => "1.3";
+        public override string ModuleVersion => "1.4";
 
         public Config Config { get; set; } = new();
         public void OnConfigParsed(Config config) => Config = config;
@@ -88,9 +88,9 @@ namespace CoinThrow
         {
             string[] options = { "Heads", "Tails" };
             int currentIndex = 0;
-            float delay = 0.1f;       // start fast
-            float slowdownStep = 0.05f;
-            int spins = 10;           // fast spins before slowing down
+            float delay = 0.2f;        // safer starting delay
+            float slowdownStep = 0.1f; // how much slower each step gets
+            int spins = 8;             // fast spins before slowing
         
             void SpinStep()
             {
@@ -98,7 +98,7 @@ namespace CoinThrow
         
                 string html =
                     $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" +
-                    $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>" +
+                    $"<font size='28' color='#FF0000'><b>&gt; {curr.ToUpper()} &lt;</b></font><br><br>" +
                     $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
         
                 player.PrintToCenterHtml(html);
@@ -114,20 +114,19 @@ namespace CoinThrow
                 {
                     delay += slowdownStep;
         
-                    if (delay > 0.5f)
+                    if (delay > 0.6f) // stop when slowed down enough
                     {
-                        // Pick final result
-                        currentIndex = isHeads ? 0 : 1;
-                        curr = options[currentIndex];
+                        // Final result
+                        curr = isHeads ? "Heads" : "Tails";
         
                         string finalHtml =
                             $"<br><font size='20' color='#FFFFFF'>Result:</font><br><br>" +
-                            $"<font size='25' color='#FF0000'><b>{curr}</b></font><br><br>" +
+                            $"<font size='28' color='#FF0000'><b>&gt; {curr.ToUpper()} &lt;</b></font><br><br>" +
                             $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
         
                         player.PrintToCenterHtml(finalHtml);
         
-                        // Keep result for 2 seconds
+                        // Keep result for 2 seconds, then clear
                         AddTimer(2.0f, () =>
                         {
                             player.PrintToCenterHtml("");
@@ -136,6 +135,7 @@ namespace CoinThrow
         
                         return;
                     }
+        
                     AddTimer(delay, SpinStep);
                 }
             }
