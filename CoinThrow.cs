@@ -95,12 +95,10 @@ namespace CoinThrow
             void SpinStep()
             {
                 string curr = options[currentIndex];
-                string prev = options[(currentIndex - 1 + options.Length) % options.Length];
-                string next = options[(currentIndex + 1) % options.Length];
         
                 string html =
-                    $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>";
-                    $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>"; // current (big, red)
+                    $"<br><font size='20' color='#FFFFFF'>Rolling your coin...</font><br><br>" +
+                    $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>" +
                     $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
         
                 player.PrintToCenterHtml(html);
@@ -121,15 +119,11 @@ namespace CoinThrow
                         // Pick final result
                         currentIndex = isHeads ? 0 : 1;
                         curr = options[currentIndex];
-                        prev = options[(currentIndex - 1 + options.Length) % options.Length];
-                        next = options[(currentIndex + 1) % options.Length];
         
                         string finalHtml =
                             $"<br><font size='20' color='#FFFFFF'>Result:</font><br><br>" +
-                            $"<font size='16' color='#AAAAAA'>{prev}</font><br>" +
-                            $"<font size='25' color='#FF0000'><b>{curr}</b></font><br>" +
-                            $"<font size='16' color='#AAAAAA'>{next}</font><br><br>" +
-                            $"<font size='15' color='#AAAAAA'>CS2.NET</font>";
+                            $"<font size='25' color='#FF0000'><b>{curr}</b></font><br><br>" +
+                            $"<font size='15' color='#AAAAAA'>{Config.ServerBrand}</font>";
         
                         player.PrintToCenterHtml(finalHtml);
         
